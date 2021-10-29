@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">BillBoard</string>
+    <string name="ad_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="ad_inter_id">ca-app-pub-3940256099942544/1033173712</string>
+    <!-- Menu drawer strings -->
+    <string name="ad_category_1">Ads</string>
+    <string name="ad_my_ads">My ads</string>
+    <string name="def">Main</string>
+    <string name="ad_cars">Cars</string>
+    <string name="ad_computers">Computers</string>
+    <string name="ad_phones">Phones</string>
+    <string name="ad_domestic">Domestic</string>
+
+    <string name="ad_category_2">Account</string>
+    <string name="ac_sign_up">Sign Up</string>
+    <string name="ac_sign_in">Sign In</string>
+    <string name="ac_sign_out">Sign Out</string>
+
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="not_reg">Sign In or Sign Up</string>
+
+    <!-- Sign Dialog -->
+    <string name="email_hint">Email</string>
+    <string name="email_reset_password_was_sent">Reset Email was sent</string>
+    <string name="dialog_reset_email_message">For resetting password plz type Email</string>
+    <string name="password_hint">Password</string>
+    <string name="forget_password">Forget password?</string>
+    <string name="sign_up_error">Registration error</string>
+    <string name="sign_in_error">Login error</string>
+    <string name="send_verification_email_error">Can\'t send an email </string>
+    <string name="send_verification_email_done">Please confirm email</string>
+
+    <!--  -->
+    <string name="link_done">Email was successfully connected</string>
+    <string name="enter_to_google">You already have account with this email, plz enter by it</string>
+    <string name="no_result_in_search">no result</string>
+
+    <!-- Edit Activity -->
+    <string name="select_country">*Select a country</string>
+    <string name="select_city">*Select a city</string>
+    <string name="no_country_selected">No country selected</string>
+    <string name="country">Country</string>
+    <string name="city">City</string>
+    <string name="index">*Index</string>
+    <string name="phone">Phone</string>
+    <string name="phone_number">*Phone number</string>
+    <string name="category">Category</string>
+    <string name="title">Title</string>
+    <string name="title_hint">*Name of Ad</string>
+    <string name="select_category">*Select category</string>
+    <string name="price">Price</string>
+    <string name="price_hint">*Indicate the price</string>
+    <string name="description">Description</string>
+    <string name="description_hint">*Description</string>
+    <string name="with_delivery">With delivery</string>
+    <string name="delivery">Delivery</string>
+    <string name="publish">Publish</string>
+
+    <!-- Add List Item -->
+    <string name="price_desc">Price:</string>
+
+</resources>

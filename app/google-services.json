@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "206362939365",
+    "firebase_url": "https://billboard-cba46-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "billboard-cba46",
+    "storage_bucket": "billboard-cba46.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206362939365:android:bb4939378db5de1dece90c",
+        "android_client_info": {
+          "package_name": "com.raywenderlich.billboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206362939365-rqu9d6a8dpvrck5eamit5hlmen00437d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.raywenderlich.billboard",
+            "certificate_hash": "149ffea74a99aee10b8b3ab4f78962ecffacc3a0"
+          }
+        },
+        {
+          "client_id": "206362939365-6n95hcqs843pi44fg2hmi62657h3pd3j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfFAmDDhOTnpyQYlhQjnl3FSmnGyrq8mA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206362939365-6n95hcqs843pi44fg2hmi62657h3pd3j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
