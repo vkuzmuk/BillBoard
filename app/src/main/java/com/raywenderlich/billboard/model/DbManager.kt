@@ -11,19 +11,30 @@ import com.google.firebase.ktx.Firebase
 
 class DbManager {
     val database = Firebase.database("https://billboard-cba46-default-rtdb.europe-west1.firebasedatabase.app")
-    val ref = database.getReference("main")
+    val ref = database.getReference(MAIN_NODE)
     val auth = Firebase.auth
 
     fun publishAd(ad: Ad, finishListener: FinishWorkListener) {
         if(auth.uid != null) {
             ref.child(ad.key ?: "empty")
            .child(auth.uid!!)
-           .child("ad")
+           .child(AD_NODE)
            .setValue(ad)
            .addOnCompleteListener {
                finishListener.onFinish()
            }
        }
+    }
+
+    fun adViewed(ad: Ad) {
+        var counter = ad.viewsCounter.toInt()
+        counter++
+
+        if(auth.uid != null) {
+            ref.child(ad.key ?: "empty")
+                .child(INFO_NODE)
+                .setValue(InfoItem(counter.toString(), ad.emailCounter, ad.callsCounter))
+        }
     }
 
     fun getMyAds(readDataCallback: ReadDataCallback?) {
@@ -51,8 +62,15 @@ class DbManager {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val adArray = ArrayList<Ad>()
                 for (item in snapshot.children) {
-                    val ad = item.children.iterator().next().child("ad").getValue(Ad :: class.java)
-                    if (ad != null) adArray.add(ad)
+                    var ad: Ad? = null
+                    item.children.forEach{
+                        if(ad == null) ad = it.child(AD_NODE).getValue(Ad :: class.java)
+                    }
+                    val infoItem = item.child(INFO_NODE).getValue(InfoItem :: class.java)
+                    ad?.viewsCounter = infoItem?.viewsCounter ?: "0"
+                    ad?.emailCounter = infoItem?.emailsCounter ?: "0"
+                    ad?.callsCounter = infoItem?.callsCounter ?: "0"
+                    if (ad != null) adArray.add(ad!!)
                 }
                 readDataCallback?.readData(adArray)
 
@@ -69,6 +87,12 @@ class DbManager {
     interface FinishWorkListener {
         fun onFinish()
 
+    }
+
+    companion object {
+        const val AD_NODE = "ad"
+        const val INFO_NODE = "info"
+        const val MAIN_NODE = "main"
     }
 
 }
