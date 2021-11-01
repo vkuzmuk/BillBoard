@@ -1,8 +1,6 @@
 package com.raywenderlich.billboard.model
 
 
-import android.util.Log
-import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -10,15 +8,15 @@ import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.raywenderlich.billboard.act.EditAdcAct
 
 class DbManager {
-    val db = Firebase.database.getReference("main")
+    val database = Firebase.database("https://billboard-cba46-default-rtdb.europe-west1.firebasedatabase.app")
+    val ref = database.getReference("main")
     val auth = Firebase.auth
 
     fun publishAd(ad: Ad, finishListener: FinishWorkListener) {
         if(auth.uid != null) {
-            db.child(ad.key ?: "empty")
+            ref.child(ad.key ?: "empty")
            .child(auth.uid!!)
            .child("ad")
            .setValue(ad)
@@ -29,20 +27,20 @@ class DbManager {
     }
 
     fun getMyAds(readDataCallback: ReadDataCallback?) {
-        val query = db.orderByChild(auth.uid + "/ad/uid").equalTo(auth.uid)
+        val query = ref.orderByChild(auth.uid + "/ad/uid").equalTo(auth.uid)
         readDataFromDb(query, readDataCallback)
 
     }
 
     fun getAllAds(readDataCallback: ReadDataCallback?) {
-        val query = db.orderByChild(auth.uid + "/ad/price")
+        val query = ref.orderByChild(auth.uid + "/ad/price")
         readDataFromDb(query, readDataCallback)
 
     }
 
     fun deleteAd(ad: Ad, listener: FinishWorkListener) {
         if(ad.key == null || ad.uid == null) return
-        db.child(ad.key).child(ad.uid).removeValue().addOnCompleteListener {
+        ref.child(ad.key).child(ad.uid).removeValue().addOnCompleteListener {
             if(it.isSuccessful) listener.onFinish()
 
         }
