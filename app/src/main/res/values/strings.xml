@@ -30,6 +30,7 @@
     <string name="sign_in_error">Login error</string>
     <string name="send_verification_email_error">Can\'t send an email </string>
     <string name="send_verification_email_done">Please confirm email</string>
+    <string name="guest">Guest</string>
 
     <!--  -->
     <string name="link_done">Email was successfully connected</string>

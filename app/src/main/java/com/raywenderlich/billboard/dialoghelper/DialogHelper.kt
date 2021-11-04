@@ -8,8 +8,7 @@ import com.raywenderlich.billboard.R
 import com.raywenderlich.billboard.accounthelper.AccountHelper
 import com.raywenderlich.billboard.databinding.SignDialogBinding
 
-class DialogHelper(act:MainActivity) {
-    private val act = act
+class DialogHelper(val act: MainActivity) {
     val accHelper = AccountHelper(act)
 
     fun createSignDialog(index: Int){

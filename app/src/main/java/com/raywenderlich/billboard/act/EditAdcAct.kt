@@ -3,13 +3,12 @@ package com.raywenderlich.billboard.act
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import com.fxn.utility.PermUtil
 import com.raywenderlich.billboard.MainActivity
 import com.raywenderlich.billboard.R
 import com.raywenderlich.billboard.adapters.ImageAdapter
@@ -28,8 +27,6 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     private val dialog = DialogSpinnerHelper()
     lateinit var imageAdapter: ImageAdapter
     private val dbManager = DbManager()
-    var launcherMultiSelectedImage: ActivityResultLauncher<Intent>? = null
-    var launcherSingleSelectImage: ActivityResultLauncher<Intent>? = null
     var editImagePos = 0
     private var isEditState = false
     private var ad: Ad? = null
@@ -67,33 +64,9 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
 
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS -> {
-                if (grantResults.isEmpty()
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                   // ImagePicker.getImages(this, 3, ImagePicker.REQUEST_CODE_GET_IMAGES)
-                } else {
-                    Toast.makeText(this,
-                        "Allow permissions to open Pix ImagePicker",
-                        Toast.LENGTH_LONG).show()
-                }
-                return
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
     private fun init() {
         imageAdapter = ImageAdapter()
         rootElement.vpImages.adapter = imageAdapter
-        launcherMultiSelectedImage = ImagePicker.getLauncherForMultiSelectedImages(this)
-        launcherSingleSelectImage = ImagePicker.getLauncherForSingleImage(this)
-
     }
 
 
@@ -124,7 +97,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
 
     fun onClickGetImages(view: View) {
         if(imageAdapter.mainArray.size == 0) {
-            ImagePicker.launcher(this, launcherMultiSelectedImage, 3)
+            ImagePicker.launcher(this, 3)
         } else {
             openChooseImageFragment(null)
             chooseImageFrag?.updateAdapterFromEdit(imageAdapter.mainArray)
@@ -162,7 +135,8 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
                     edTitle.text.toString(),
                     edPrice.text.toString(),
                     edDescription.text.toString(),
-                    dbManager.ref.push().key,
+                    dbManager.db.push().key,
+                    "0",
                     dbManager.auth.uid)
         }
         return ad
@@ -174,7 +148,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
         chooseImageFrag = null
     }
 
-    fun openChooseImageFragment(newList: ArrayList<String>?) {
+    fun openChooseImageFragment(newList: ArrayList<Uri>?) {
         chooseImageFrag = ImageListFrag(this, newList)
         rootElement.scrollViewMain.visibility = View.GONE
         val fm = supportFragmentManager.beginTransaction()

@@ -5,15 +5,37 @@ import androidx.lifecycle.ViewModel
 import com.raywenderlich.billboard.model.Ad
 import com.raywenderlich.billboard.model.DbManager
 
-class FirebaseViewModel: ViewModel() {
+class FirebaseViewModel : ViewModel() {
     private val dbManager = DbManager()
     val liveAdsData = MutableLiveData<ArrayList<Ad>>()
 
     fun loadAllAds() {
-        dbManager.getAllAds(object: DbManager.ReadDataCallback{
+        dbManager.getAllAds(object : DbManager.ReadDataCallback {
 
             override fun readData(list: ArrayList<Ad>) {
                 liveAdsData.value = list
+            }
+
+        })
+    }
+
+    fun onFavClick(ad: Ad) {
+        dbManager.onFavClick(ad, object : DbManager.FinishWorkListener {
+
+            override fun onFinish() {
+                val updatedList = liveAdsData.value
+                val pos = updatedList?.indexOf(ad)
+                if (pos != -1) {
+                    pos?.let {
+                        val favCounter =
+                            if (!ad.isFav) ad.favCounter.toInt() + 1 else ad.favCounter.toInt() - 1
+                        updatedList[pos] = updatedList[pos].copy(
+                            isFav = !ad.isFav,
+                            favCounter = favCounter.toString()
+                        )
+                    }
+                }
+                liveAdsData.postValue(updatedList)
             }
 
         })
@@ -24,7 +46,17 @@ class FirebaseViewModel: ViewModel() {
     }
 
     fun loadMyAds() {
-        dbManager.getMyAds(object: DbManager.ReadDataCallback{
+        dbManager.getMyAds(object : DbManager.ReadDataCallback {
+
+            override fun readData(list: ArrayList<Ad>) {
+                liveAdsData.value = list
+            }
+
+        })
+    }
+
+    fun loadMyFavs() {
+        dbManager.getMyFavs(object : DbManager.ReadDataCallback {
 
             override fun readData(list: ArrayList<Ad>) {
                 liveAdsData.value = list
@@ -34,7 +66,7 @@ class FirebaseViewModel: ViewModel() {
     }
 
     fun deleteItem(ad: Ad) {
-        dbManager.deleteAd(ad, object : DbManager.FinishWorkListener{
+        dbManager.deleteAd(ad, object : DbManager.FinishWorkListener {
 
             override fun onFinish() {
                 val updatedList = liveAdsData.value

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.raywenderlich.billboard.MainActivity
+import com.raywenderlich.billboard.R
 import com.raywenderlich.billboard.act.EditAdcAct
 import com.raywenderlich.billboard.model.Ad
 import com.raywenderlich.billboard.databinding.AdListItemBinding
@@ -17,7 +18,7 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdHolder {
         val binding = AdListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            return AdHolder(binding, act)
+        return AdHolder(binding, act)
     }
 
     override fun onBindViewHolder(holder: AdHolder, position: Int) {
@@ -36,26 +37,32 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
 
     }
 
-    class AdHolder(val binding: AdListItemBinding, val act: MainActivity): RecyclerView.ViewHolder(binding.root) {
+    class AdHolder(val binding: AdListItemBinding, val act: MainActivity) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun setData(ad: Ad) = with(binding) {
             tvDescription.text = ad.description
             tvPrice.text = ad.price
             tvTitle.text = ad.title
             tvViewCounter.text = ad.viewsCounter
+            tvFavCounter.text = ad.favCounter
+            if (ad.isFav) {
+                ibFav.setImageResource(R.drawable.ic_fav_pressed)
+            } else {
+                ibFav.setImageResource(R.drawable.ic_fav_normal)
+            }
             showEditPanel(isOwner(ad))
-            itemView.setOnClickListener {
-                act.onAdViewed(ad)
+            ibFav.setOnClickListener {
+                if (act.mAuth.currentUser?.isAnonymous == false) act.onFavClicked(ad)
             }
+            itemView.setOnClickListener { act.onAdViewed(ad) }
             ibEditAd.setOnClickListener(onClickEdit(ad))
-            ibDeleteAd.setOnClickListener {
-                act.onDeleteItem(ad)
-            }
+            ibDeleteAd.setOnClickListener { act.onDeleteItem(ad) }
         }
 
         private fun onClickEdit(ad: Ad): View.OnClickListener {
             return View.OnClickListener {
-                val editIntent = Intent(act, EditAdcAct :: class.java).apply {
+                val editIntent = Intent(act, EditAdcAct::class.java).apply {
                     putExtra(MainActivity.EDIT_STATE, true)
                     putExtra(MainActivity.ADS_DATA, ad)
                 }
@@ -68,7 +75,7 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
         }
 
         private fun showEditPanel(isOwner: Boolean) {
-            if(isOwner) {
+            if (isOwner) {
                 binding.editPanel.visibility = View.VISIBLE
             } else {
                 binding.editPanel.visibility = View.GONE
@@ -80,6 +87,7 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
     interface Listener {
         fun onDeleteItem(ad: Ad)
         fun onAdViewed(ad: Ad)
+        fun onFavClicked(ad: Ad)
     }
 
 }

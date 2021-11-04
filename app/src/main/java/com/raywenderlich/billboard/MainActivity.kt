@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -17,6 +18,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.raywenderlich.billboard.accounthelper.AccountHelper
 import com.raywenderlich.billboard.act.EditAdcAct
 import com.raywenderlich.billboard.adapters.AdsRcAdapter
 import com.raywenderlich.billboard.databinding.ActivityMainBinding
@@ -26,7 +28,8 @@ import com.raywenderlich.billboard.dialoghelper.GoogleAccConst
 import com.raywenderlich.billboard.model.Ad
 import com.raywenderlich.billboard.viewmodel.FirebaseViewModel
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, AdsRcAdapter.Listener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+    AdsRcAdapter.Listener {
     private lateinit var tvAccount: TextView
     private lateinit var rootElement: ActivityMainBinding
     private val dialogHelper = DialogHelper(this)
@@ -51,15 +54,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode == GoogleAccConst.GOOGLE_SIGN_IN_REQUEST_CODE) {
-            //Log.d("MyLog", "Sign in result")
+        if (requestCode == GoogleAccConst.GOOGLE_SIGN_IN_REQUEST_CODE) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                if(account != null) {
+                if (account != null) {
                     dialogHelper.accHelper.signInFireBaseWithGoogle(account.idToken!!)
                 }
-            } catch(e: ApiException) {
+            } catch (e: ApiException) {
                 Log.d("MyLog", "Api error: ${e.message}")
             }
         }
@@ -74,14 +76,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initViewModel() {
         firebaseViewModel.liveAdsData.observe(this, {
             adapter.updateAdapter(it)
-
+            rootElement.mainContent.tvEmpty.visibility =
+                if (it.isEmpty()) View.VISIBLE else View.GONE
         })
     }
 
-    private fun init(){
+    private fun init() {
         setSupportActionBar(rootElement.mainContent.toolbar)
-        val toggle = ActionBarDrawerToggle(this, rootElement.drawerLayout,
-            rootElement.mainContent.toolbar, R.string.open, R.string.close )
+        val toggle = ActionBarDrawerToggle(
+            this, rootElement.drawerLayout,
+            rootElement.mainContent.toolbar, R.string.open, R.string.close
+        )
         rootElement.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         rootElement.navView.setNavigationItemSelectedListener(this)
@@ -90,9 +95,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun bottomMenuOnClick() = with(rootElement) {
         mainContent.bNavView.setOnNavigationItemSelectedListener { item ->
-            when(item.itemId) {
+            when (item.itemId) {
                 R.id.id_new_ad -> {
-                    val i = Intent(this@MainActivity, EditAdcAct ::class.java)
+                    val i = Intent(this@MainActivity, EditAdcAct::class.java)
                     startActivity(i)
                 }
                 R.id.id_my_ads -> {
@@ -100,7 +105,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     mainContent.toolbar.title = getString(R.string.ad_my_ads)
                 }
                 R.id.id_favs -> {
-                    Toast.makeText(this@MainActivity, "My Favs", Toast.LENGTH_LONG).show()
+                    firebaseViewModel.loadMyFavs()
                 }
                 R.id.id_home -> {
                     firebaseViewModel.loadAllAds()
@@ -119,7 +124,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.id_my_ads -> {
                 Toast.makeText(this, "Pressed id_my_ads", Toast.LENGTH_SHORT).show()
             }
@@ -142,6 +147,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 dialogHelper.createSignDialog(DialogConst.SIGN_IN_STATE)
             }
             R.id.id_sign_out -> {
+                if (mAuth.currentUser?.isAnonymous == true) {
+                    rootElement.drawerLayout.closeDrawer(GravityCompat.START)
+                    return true
+                }
                 uiUpdate(null)
                 mAuth.signOut()
                 dialogHelper.accHelper.signOutGoogle()
@@ -152,10 +161,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun uiUpdate(user: FirebaseUser?) {
-        tvAccount.text = if(user == null) {
-            resources.getString(R.string.not_reg)
-        } else {
-            user.email
+        if (user == null) {
+            dialogHelper.accHelper.signInAnonymously(object : AccountHelper.Listener {
+
+                override fun onComplete() {
+                    tvAccount.setText(R.string.guest)
+                }
+            })
+        } else if (user.isAnonymous) {
+            tvAccount.setText(R.string.guest)
+        } else if (!user.isAnonymous) {
+            tvAccount.text = user.email
         }
     }
 
@@ -171,4 +187,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onAdViewed(ad: Ad) {
         firebaseViewModel.adViewed(ad)
     }
+
+    override fun onFavClicked(ad: Ad) {
+        firebaseViewModel.onFavClick(ad)
+    }
 }
+
