@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.raywenderlich.billboard.R
 import com.raywenderlich.billboard.act.EditAdcAct
 import io.ak1.pix.helpers.PixEventCallback
@@ -35,7 +36,7 @@ object ImagePicker {
 
     }
 
-    fun launcher(edAct: EditAdcAct, imageCounter: Int) {
+    fun getMultiImages(edAct: EditAdcAct, imageCounter: Int) {
         edAct.addPixToActivity(R.id.place_holder, getOptions(imageCounter)) { result ->
             when (result.status) {
                 PixEventCallback.Status.SUCCESS -> {
@@ -44,6 +45,32 @@ object ImagePicker {
                 }
             }
         }
+    }
+
+    fun addImages(edAct: EditAdcAct, imageCounter: Int) {
+        edAct.addPixToActivity(R.id.place_holder, getOptions(imageCounter)) { result ->
+            when (result.status) {
+                PixEventCallback.Status.SUCCESS -> {
+                    openChooseImageFrag(edAct)
+                    edAct.chooseImageFrag?.updateAdapter(result.data as ArrayList<Uri>, edAct)
+                }
+            }
+        }
+    }
+
+    fun getSingleImage(edAct: EditAdcAct) {
+        edAct.addPixToActivity(R.id.place_holder, getOptions(1)) { result ->
+            when (result.status) {
+                PixEventCallback.Status.SUCCESS -> {
+                    openChooseImageFrag(edAct)
+                    singleImage(edAct, result.data[0])
+                }
+            }
+        }
+    }
+
+    private fun openChooseImageFrag(edAct: EditAdcAct) {
+        edAct.supportFragmentManager.beginTransaction().replace(R.id.place_holder, edAct.chooseImageFrag!!).commit()
     }
 
     private fun closePixFragment(edAct: EditAdcAct) {
@@ -61,8 +88,6 @@ object ImagePicker {
     fun getMultiSelectedImages(edAct: EditAdcAct, uris: List<Uri>) {
         if (uris.size > 1 && edAct.chooseImageFrag == null) {
             edAct.openChooseImageFragment(uris as ArrayList<Uri>)
-        } else if (edAct.chooseImageFrag != null) {
-            edAct.openChooseImageFragment(uris as ArrayList<Uri>)
         } else if (uris.size == 1 && edAct.chooseImageFrag == null) {
             CoroutineScope(Dispatchers.Main).launch {
                 edAct.rootElement.pBarLoad.visibility = View.VISIBLE
@@ -72,19 +97,12 @@ object ImagePicker {
                 ) as ArrayList<Bitmap>
                 edAct.rootElement.pBarLoad.visibility = View.GONE
                 edAct.imageAdapter.update(bitMapArray)
+                closePixFragment(edAct)
             }
         }
     }
 
-    fun getLauncherForSingleImage(edAct: EditAdcAct): ActivityResultLauncher<Intent> {
-        return edAct.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            /*if (result.resultCode == AppCompatActivity.RESULT_OK) {
-                if (result.data != null) {
-                    val uris = result.data?.getStringArrayListExtra(Pix.IMAGE_RESULTS)
-                    edAct.chooseImageFrag?.setSingleImage(uris?.get(0)!!, edAct.editImagePos)
-
-                }
-            }*/
-        }
+    private fun singleImage(edAct: EditAdcAct, uri: Uri) {
+        edAct.chooseImageFrag?.setSingleImage(uri, edAct.editImagePos)
     }
 }

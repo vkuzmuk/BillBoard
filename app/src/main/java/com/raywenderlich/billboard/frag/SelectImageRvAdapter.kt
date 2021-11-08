@@ -14,10 +14,11 @@ import com.raywenderlich.billboard.utils.ImagePicker
 import com.raywenderlich.billboard.utils.ItemTouchMoveCallback
 
 
-class SelectImageRvAdapter(val adapterCallback: AdapterCallback): RecyclerView.Adapter<SelectImageRvAdapter.ImageHolder>(),
+class SelectImageRvAdapter(val adapterCallback: AdapterCallback) :
+    RecyclerView.Adapter<SelectImageRvAdapter.ImageHolder>(),
     ItemTouchMoveCallback.ItemTouchAdapter {
 
-   val mainArray = ArrayList<Bitmap>()
+    val mainArray = ArrayList<Bitmap>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageHolder {
         val binding = SelectImageFragItemBinding
@@ -46,14 +47,15 @@ class SelectImageRvAdapter(val adapterCallback: AdapterCallback): RecyclerView.A
         notifyDataSetChanged()
     }
 
-    class ImageHolder(private val binding: SelectImageFragItemBinding,
-                      val context: Context,
-                      val adapter: SelectImageRvAdapter) : RecyclerView.ViewHolder(binding.root) {
-
+    class ImageHolder(
+        private val binding: SelectImageFragItemBinding,
+        val context: Context,
+        val adapter: SelectImageRvAdapter
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun setData(bitmap: Bitmap) {
             binding.imEditImage.setOnClickListener {
-                ImagePicker.launcher(context as EditAdcAct, 1)
+                ImagePicker.getSingleImage(context as EditAdcAct)
                 context.editImagePos = adapterPosition
             }
 
@@ -65,18 +67,18 @@ class SelectImageRvAdapter(val adapterCallback: AdapterCallback): RecyclerView.A
                 adapter.adapterCallback.onItemDelete()
             }
 
-            binding.tvTitle.text = context.resources.getStringArray(R.array.title_array)[adapterPosition]
+            binding.tvTitle.text =
+                context.resources.getStringArray(R.array.title_array)[adapterPosition]
             ImageManager.chooseScaleType(binding.imageView, bitmap)
             binding.imageView.setImageBitmap(bitmap)
         }
     }
 
-    fun updateAdapter(newList: List<Bitmap>, needClear: Boolean){
-        if(needClear) mainArray.clear()
+    fun updateAdapter(newList: List<Bitmap>, needClear: Boolean) {
+        if (needClear) mainArray.clear()
         mainArray.addAll(newList)
         notifyDataSetChanged()
     }
-
 
 
 }
