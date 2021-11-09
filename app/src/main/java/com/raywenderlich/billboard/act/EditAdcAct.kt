@@ -28,7 +28,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     lateinit var imageAdapter: ImageAdapter
     private val dbManager = DbManager()
     var editImagePos = 0
-    private var imageIndex  = 0
+    private var imageIndex = 0
     private var isEditState = false
     private var ad: Ad? = null
 
@@ -162,7 +162,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     }
 
     private fun uploadImages() {
-        if (imageAdapter.mainArray.size == imageIndex){
+        if (imageAdapter.mainArray.size == imageIndex) {
             dbManager.publishAd(ad!!, onPublishFinish())
             return
         }
@@ -180,7 +180,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     }
 
     private fun setImageUriToAd(uri: String) {
-        when(imageIndex) {
+        when (imageIndex) {
             0 -> ad = ad?.copy(mainImage = uri)
             1 -> ad = ad?.copy(image2 = uri)
             2 -> ad = ad?.copy(image3 = uri)
@@ -198,7 +198,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
             .child(dbManager.auth.uid!!)
             .child("image_${System.currentTimeMillis()}")
         val upTask = imStorageRef.putBytes(byteArray)
-        upTask.continueWithTask{ task ->
+        upTask.continueWithTask { task ->
             imStorageRef.downloadUrl
         }.addOnCompleteListener(listener)
     }
