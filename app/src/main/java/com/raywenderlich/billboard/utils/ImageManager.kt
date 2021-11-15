@@ -7,8 +7,12 @@ import android.net.Uri
 import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
+import com.raywenderlich.billboard.adapters.ImageAdapter
+import com.raywenderlich.billboard.model.Ad
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import java.io.File
@@ -37,48 +41,67 @@ object ImageManager {
         }
     }
 
-    suspend fun imageResize(uris: ArrayList<Uri>, act: Activity): List<Bitmap> = withContext(Dispatchers.IO) {
-        val tempList = ArrayList<List<Int>>()
-        val bitmapList = ArrayList<Bitmap>()
+    suspend fun imageResize(uris: ArrayList<Uri>, act: Activity): List<Bitmap> =
+        withContext(Dispatchers.IO) {
+            val tempList = ArrayList<List<Int>>()
+            val bitmapList = ArrayList<Bitmap>()
 
-        for (n in uris.indices) {
-            val size = getImageSize(uris[n], act)
-            val imageRatio = size[WIDTH].toFloat() / size[HEIGHT].toFloat()
+            for (n in uris.indices) {
+                val size = getImageSize(uris[n], act)
+                val imageRatio = size[WIDTH].toFloat() / size[HEIGHT].toFloat()
 
-            if (imageRatio > 1) {
+                if (imageRatio > 1) {
 
-                if (size[WIDTH] > MAX_IMAGE_SIZE) {
+                    if (size[WIDTH] > MAX_IMAGE_SIZE) {
 
-                    tempList.add(listOf(MAX_IMAGE_SIZE, (MAX_IMAGE_SIZE / imageRatio).toInt()))
+                        tempList.add(listOf(MAX_IMAGE_SIZE, (MAX_IMAGE_SIZE / imageRatio).toInt()))
 
-                } else {
+                    } else {
 
-                    tempList.add(listOf(size[WIDTH], size[HEIGHT]))
-                }
-
-            } else {
-
-                if (size[HEIGHT] > MAX_IMAGE_SIZE) {
-
-                    tempList.add(listOf((MAX_IMAGE_SIZE * imageRatio).toInt(), MAX_IMAGE_SIZE))
+                        tempList.add(listOf(size[WIDTH], size[HEIGHT]))
+                    }
 
                 } else {
 
-                    tempList.add(listOf(size[WIDTH], size[HEIGHT]))
+                    if (size[HEIGHT] > MAX_IMAGE_SIZE) {
+
+                        tempList.add(listOf((MAX_IMAGE_SIZE * imageRatio).toInt(), MAX_IMAGE_SIZE))
+
+                    } else {
+
+                        tempList.add(listOf(size[WIDTH], size[HEIGHT]))
+                    }
                 }
             }
-        }
-        for (i in uris.indices) {
-            kotlin.runCatching {
-                bitmapList
-                    .add(
-                        Picasso.get().load(uris[i])
-                            .resize(tempList[i][WIDTH], tempList[i][HEIGHT]).get()
-                    )
+            for (i in uris.indices) {
+                kotlin.runCatching {
+                    bitmapList
+                        .add(
+                            Picasso.get().load(uris[i])
+                                .resize(tempList[i][WIDTH], tempList[i][HEIGHT]).get()
+                        )
+                }
             }
+
+            return@withContext bitmapList
         }
 
-        return@withContext bitmapList
+    private suspend fun getBitmapFromUris(uris: List<String?>): List<Bitmap> = withContext(Dispatchers.IO) {
+            val bitmapList = ArrayList<Bitmap>()
+            for (i in uris.indices) {
+                kotlin.runCatching {
+                    bitmapList.add(Picasso.get().load(uris[i]).get())
+                }
+            }
+            return@withContext bitmapList
+        }
+
+     fun fillImageArray(ad: Ad, adapter: ImageAdapter) {
+        val listUris = listOf(ad.mainImage, ad.image2, ad.image3)
+        CoroutineScope(Dispatchers.Main).launch {
+            val bitmapList = getBitmapFromUris(listUris)
+            adapter.update(bitmapList as ArrayList<Bitmap>)
+        }
     }
 
 }

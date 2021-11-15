@@ -39,12 +39,17 @@
 
     <!-- Edit Activity -->
     <string name="select_country">*Select a country</string>
+    <string name="email_d">Email:</string>
     <string name="select_city">*Select a city</string>
     <string name="no_country_selected">No country selected</string>
     <string name="country">Country</string>
+    <string name="country_d">Country:</string>
     <string name="city">City</string>
+    <string name="city_d">City:</string>
     <string name="index">*Index</string>
+    <string name="index_d">*Index:</string>
     <string name="phone">Phone</string>
+    <string name="phone_d">Phone:</string>
     <string name="phone_number">*Phone number</string>
     <string name="category">Category</string>
     <string name="title">Title</string>
@@ -55,6 +60,7 @@
     <string name="description">Description</string>
     <string name="description_hint">*Description</string>
     <string name="with_delivery">With delivery</string>
+    <string name="with_delivery_d">With delivery:</string>
     <string name="delivery">Delivery</string>
     <string name="publish">Publish</string>
 

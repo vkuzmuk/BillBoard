@@ -9,9 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.raywenderlich.billboard.MainActivity
 import com.raywenderlich.billboard.R
+import com.raywenderlich.billboard.act.DescriptionActivity
 import com.raywenderlich.billboard.act.EditAdcAct
 import com.raywenderlich.billboard.model.Ad
 import com.raywenderlich.billboard.databinding.AdListItemBinding
+import com.squareup.picasso.Picasso
 
 class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.AdHolder>() {
     val adArray = ArrayList<Ad>()
@@ -46,18 +48,23 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
             tvTitle.text = ad.title
             tvViewCounter.text = ad.viewsCounter
             tvFavCounter.text = ad.favCounter
-            if (ad.isFav) {
-                ibFav.setImageResource(R.drawable.ic_fav_pressed)
-            } else {
-                ibFav.setImageResource(R.drawable.ic_fav_normal)
-            }
+            Picasso.get().load(ad.mainImage).into(mainImage)
+            isFav(ad)
             showEditPanel(isOwner(ad))
+            mainOnClick(ad)
+        }
+
+        private fun mainOnClick(ad: Ad) = with(binding) {
             ibFav.setOnClickListener {
                 if (act.mAuth.currentUser?.isAnonymous == false) act.onFavClicked(ad)
             }
-            itemView.setOnClickListener { act.onAdViewed(ad) }
+            itemView.setOnClickListener {
+                act.onAdViewed(ad)
+            }
             ibEditAd.setOnClickListener(onClickEdit(ad))
-            ibDeleteAd.setOnClickListener { act.onDeleteItem(ad) }
+            ibDeleteAd.setOnClickListener {
+                act.onDeleteItem(ad)
+            }
         }
 
         private fun onClickEdit(ad: Ad): View.OnClickListener {
@@ -67,6 +74,14 @@ class AdsRcAdapter(val act: MainActivity) : RecyclerView.Adapter<AdsRcAdapter.Ad
                     putExtra(MainActivity.ADS_DATA, ad)
                 }
                 act.startActivity(editIntent)
+            }
+        }
+
+        private fun isFav(ad: Ad) {
+            if (ad.isFav) {
+                binding.ibFav.setImageResource(R.drawable.ic_fav_pressed)
+            } else {
+                binding.ibFav.setImageResource(R.drawable.ic_fav_normal)
             }
         }
 
