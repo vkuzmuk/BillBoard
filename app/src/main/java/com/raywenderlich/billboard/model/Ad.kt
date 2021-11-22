@@ -19,6 +19,8 @@ data class Ad(
     val key: String? = null,
     var favCounter: String = "0",
     val uid: String? = null,
+    val time: String = "0",
+
     var isFav: Boolean = false,
 
     var viewsCounter: String = "0",

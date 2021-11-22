@@ -19,10 +19,12 @@
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_eye.xml" value="0.1259259259259259" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_fav_normal.xml" value="0.1259259259259259" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_fav_pressed.xml" value="0.1259259259259259" />
+        <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_filter.xml" value="0.14629629629629629" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_my_ads.xml" value="0.1574074074074074" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/drawable/ic_new_ads.xml" value="0.1259259259259259" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/activity_description.xml" value="0.33175355450236965" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/activity_edit_adc.xml" value="0.4" />
+        <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/activity_filter.xml" value="0.4" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/ad_list_item.xml" value="0.4" />
         <entry key="..\:/Coding/My Projects/BillBoard/app/src/main/res/layout/image_adapter_item.xml" value="0.25416666666666665" />

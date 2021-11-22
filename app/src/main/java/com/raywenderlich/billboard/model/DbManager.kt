@@ -19,15 +19,20 @@ class DbManager {
     val auth = Firebase.auth
 
     fun publishAd(ad: Ad, finishListener: FinishWorkListener) {
-        if (auth.uid != null) {
+        if (auth.uid != null)
             db.child(ad.key ?: "empty")
                 .child(auth.uid!!)
                 .child(AD_NODE)
                 .setValue(ad)
                 .addOnCompleteListener {
-                    finishListener.onFinish()
+                    val adFilter = AdFilter(ad.time, "${ad.category}_${ad.time}")
+                    db.child(ad.key ?: "empty")
+                        .child(FILTER_NODE)
+                        .setValue(adFilter)
+                        .addOnCompleteListener {
+                            finishListener.onFinish()
+                        }
                 }
-        }
     }
 
     fun getMyAds(readDataCallback: ReadDataCallback?) {
@@ -40,8 +45,26 @@ class DbManager {
         readDataFromDb(query, readDataCallback)
     }
 
-    fun getAllAds(readDataCallback: ReadDataCallback?) {
-        val query = db.orderByChild(auth.uid + "/ad/price")
+    fun getAllAdsFirstPage(readDataCallback: ReadDataCallback?) {
+        val query = db.orderByChild( "/adFilter/time").limitToLast(ADS_LIMIT)
+        readDataFromDb(query, readDataCallback)
+    }
+
+    fun getAllAdsNextPage(time: String, readDataCallback: ReadDataCallback?) {
+        val query = db.orderByChild( "/adFilter/time").endBefore(time).limitToLast(ADS_LIMIT)
+        readDataFromDb(query, readDataCallback)
+    }
+
+    fun getAllAdsFromCatFirstPage(cat: String, readDataCallback: ReadDataCallback?) {
+        val query = db.orderByChild( "/adFilter/catTime")
+            .startAt(cat).endAt(cat + "_\uf8ff").limitToLast(ADS_LIMIT)
+        readDataFromDb(query, readDataCallback)
+
+    }
+
+    fun getAllAdsFromCatNextPage(catTime: String, readDataCallback: ReadDataCallback?) {
+        val query = db.orderByChild( "/adFilter/catTime")
+            .endBefore(catTime).limitToLast(ADS_LIMIT)
         readDataFromDb(query, readDataCallback)
 
     }
@@ -143,8 +166,10 @@ class DbManager {
     companion object {
         const val AD_NODE = "ad"
         const val INFO_NODE = "info"
+        const val FILTER_NODE = "adFilter"
         const val MAIN_NODE = "main"
         const val FAVS_NOTE = "favs"
+        const val ADS_LIMIT = 2
     }
 
 }

@@ -89,7 +89,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
             val listCity = CityHelper.getAllCities(selectedCountry, this)
             dialog.showSpinnerDialog(this, listCity, binding.tvCity)
         } else {
-            Toast.makeText(this, R.string.no_country_selected, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.no_country_selected), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -146,7 +146,8 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
                 "empty",
                 dbManager.db.push().key,
                 "0",
-                dbManager.auth.uid
+                dbManager.auth.uid,
+                System.currentTimeMillis().toString()
             )
         }
         return ad

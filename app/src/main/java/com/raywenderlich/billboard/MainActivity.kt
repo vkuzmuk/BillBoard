@@ -1,12 +1,12 @@
 package com.raywenderlich.billboard
 
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
@@ -29,6 +29,7 @@ import com.google.firebase.ktx.Firebase
 import com.raywenderlich.billboard.accounthelper.AccountHelper
 import com.raywenderlich.billboard.act.DescriptionActivity
 import com.raywenderlich.billboard.act.EditAdcAct
+import com.raywenderlich.billboard.act.FilterActivity
 import com.raywenderlich.billboard.adapters.AdsRcAdapter
 import com.raywenderlich.billboard.databinding.ActivityMainBinding
 import com.raywenderlich.billboard.dialoghelper.DialogConst
@@ -47,6 +48,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val adapter = AdsRcAdapter(this)
     lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private val firebaseViewModel: FirebaseViewModel by viewModels()
+    private var clearUpdate: Boolean = true
+    private var currentCategory: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +58,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         init()
         initRecyclerView()
         initViewModel()
-        firebaseViewModel.loadAllAds()
         bottomMenuOnClick()
         scrollListener()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == R.id.id_filter) {
+            startActivity(Intent(this@MainActivity, FilterActivity :: class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {
@@ -87,13 +101,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initViewModel() {
         firebaseViewModel.liveAdsData.observe(this, {
-            adapter.updateAdapter(it)
-            binding.mainContent.tvEmpty.visibility =
-                if (it.isEmpty()) View.VISIBLE else View.GONE
+            val list = getAdsByCategory(it)
+            if(!clearUpdate) {
+                adapter.updateAdapter(list)
+            } else {
+                adapter.updateAdapterWithClear(list)
+            }
+            binding.mainContent.tvEmpty.visibility = if (adapter.itemCount == 0) View.VISIBLE else View.GONE
         })
     }
 
+    private fun getAdsByCategory(list: ArrayList<Ad>): ArrayList<Ad> {
+        val tempList = ArrayList<Ad>()
+        tempList.addAll(list)
+        if (currentCategory != getString(R.string.def)) {
+            tempList.clear()
+            list.forEach {
+                if(currentCategory == it.category) tempList.add(it)
+            }
+        }
+        tempList.reverse()
+        return tempList
+    }
+
     private fun init() {
+        currentCategory = getString(R.string.def)
         setSupportActionBar(binding.mainContent.toolbar)
         onActivityResult()
         navViewSettings()
@@ -110,6 +142,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun bottomMenuOnClick() = with(binding) {
         mainContent.bNavView.setOnNavigationItemSelectedListener { item ->
+            clearUpdate = true
             when (item.itemId) {
                 R.id.id_new_ad -> {
                     val i = Intent(this@MainActivity, EditAdcAct::class.java)
@@ -123,7 +156,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     firebaseViewModel.loadMyFavs()
                 }
                 R.id.id_home -> {
-                    firebaseViewModel.loadAllAds()
+                    currentCategory = getString(R.string.def)
+                    firebaseViewModel.loadAllAdsFirstPage()
                     mainContent.toolbar.title = getString(R.string.def)
                 }
             }
@@ -139,21 +173,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        clearUpdate = true
         when (item.itemId) {
             R.id.id_my_ads -> {
                 Toast.makeText(this, "Pressed id_my_ads", Toast.LENGTH_SHORT).show()
             }
             R.id.id_cars -> {
-                Toast.makeText(this, "Pressed id_cars", Toast.LENGTH_SHORT).show()
+                getAdsFromCat(getString(R.string.ad_cars))
             }
             R.id.id_computers -> {
-                Toast.makeText(this, "Pressed id_computers", Toast.LENGTH_SHORT).show()
+                getAdsFromCat(getString(R.string.ad_computers))
             }
             R.id.id_phones -> {
-                Toast.makeText(this, "Pressed id_phones", Toast.LENGTH_SHORT).show()
+                getAdsFromCat(getString(R.string.ad_phones))
             }
             R.id.id_domestic -> {
-                Toast.makeText(this, "Pressed id_domestic", Toast.LENGTH_SHORT).show()
+                getAdsFromCat(getString(R.string.ad_domestic))
             }
             R.id.id_sign_up -> {
                 dialogHelper.createSignDialog(DialogConst.SIGN_UP_STATE)
@@ -173,6 +208,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun getAdsFromCat(cat: String) {
+        currentCategory = cat
+        firebaseViewModel.loadAllAdsFromCat(cat)
     }
 
     fun uiUpdate(user: FirebaseUser?) {
@@ -239,10 +279,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 super.onScrollStateChanged(recView, newState)
                 if (!recView.canScrollVertically(SCROLL_DOWN) &&
                     newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    Log.d("MyLog", "Can't scroll down")
+                    clearUpdate = false
+                    val adsList = firebaseViewModel.liveAdsData.value!!
+                    if(adsList.isNotEmpty()) {
+                        getAdsFromCat(adsList)
+                    }
                 }
             }
         })
+    }
+
+    private fun getAdsFromCat(adsList: ArrayList<Ad>) {
+        adsList[0].let {
+            if (currentCategory == getString(R.string.def)) {
+                firebaseViewModel.loadAllAdsNextPage(it.time)
+            } else {
+                val catTime = "${it.category}_${it.time}"
+                firebaseViewModel.loadAllAdsFromCatNextPage(catTime)
+            }
+        }
     }
 
     companion object {
