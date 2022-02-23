@@ -36,6 +36,7 @@ import com.raywenderlich.billboard.databinding.ActivityMainBinding
 import com.raywenderlich.billboard.dialoghelper.DialogConst
 import com.raywenderlich.billboard.dialoghelper.DialogHelper
 import com.raywenderlich.billboard.model.Ad
+import com.raywenderlich.billboard.utils.FilterManager
 import com.raywenderlich.billboard.viewmodel.FirebaseViewModel
 import com.squareup.picasso.Picasso
 
@@ -107,7 +108,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         ) {
             if (it.resultCode == RESULT_OK) {
                 filter = it.data?.getStringExtra(FilterActivity.FILTER_KEY)!!
-                Log.d("MyLog", "Filter: $filter")
+                Log.d("MyLog", "getFilter: ${FilterManager.getFilter(filter)}")
             }
         }
     }
