@@ -9,6 +9,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import com.raywenderlich.billboard.utils.FilterManager
 
 class DbManager {
     val database =
@@ -25,7 +26,7 @@ class DbManager {
                 .child(AD_NODE)
                 .setValue(ad)
                 .addOnCompleteListener {
-                    val adFilter = AdFilter(ad.time, "${ad.category}_${ad.time}")
+                    val adFilter = FilterManager.createFilter(ad)
                     db.child(ad.key ?: "empty")
                         .child(FILTER_NODE)
                         .setValue(adFilter)
@@ -56,14 +57,14 @@ class DbManager {
     }
 
     fun getAllAdsFromCatFirstPage(cat: String, readDataCallback: ReadDataCallback?) {
-        val query = db.orderByChild( "/adFilter/catTime")
+        val query = db.orderByChild( "/adFilter/cat_time")
             .startAt(cat).endAt(cat + "_\uf8ff").limitToLast(ADS_LIMIT)
         readDataFromDb(query, readDataCallback)
 
     }
 
     fun getAllAdsFromCatNextPage(catTime: String, readDataCallback: ReadDataCallback?) {
-        val query = db.orderByChild( "/adFilter/catTime")
+        val query = db.orderByChild( "/adFilter/cat_time")
             .endBefore(catTime).limitToLast(ADS_LIMIT)
         readDataFromDb(query, readDataCallback)
 
