@@ -170,8 +170,16 @@
                 android:id="@+id/btDone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
                 android:text="@string/apply_filter"
+                android:textColor="@color/green_main"
+                app:backgroundTint="@color/white" />
+
+            <Button
+                android:id="@+id/btClearFilter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/clear_filter"
                 android:textColor="@color/green_main"
                 app:backgroundTint="@color/white" />
 

@@ -64,6 +64,7 @@
     <string name="delivery">Delivery</string>
     <string name="publish">Publish</string>
     <string name="apply_filter">Apply filter</string>
+    <string name="clear_filter">Clear filter</string>
 
     <!-- Add List Item -->
     <string name="price_desc">Price:</string>
