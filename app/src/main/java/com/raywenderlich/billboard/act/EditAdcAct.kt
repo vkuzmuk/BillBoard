@@ -111,7 +111,7 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     fun onClickPublish(view: View) {
         ad = fillAd()
         if (isEditState) {
-            ad?.copy(key = ad?.key)?.let { dbManager.publishAd(it, onPublishFinish()) }
+            dbManager.publishAd(ad!!, onPublishFinish())
         } else {
             uploadImages()
         }
@@ -128,9 +128,9 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     }
 
     private fun fillAd(): Ad {
-        val ad: Ad
+        val adTemp: Ad
         binding.apply {
-            ad = Ad(
+            adTemp = Ad(
                 tvCountry.text.toString(),
                 tvCity.text.toString(),
                 edTel.text.toString(),
@@ -141,16 +141,16 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
                 edPrice.text.toString(),
                 edDescription.text.toString(),
                 edEmail.text.toString(),
-                "empty",
-                "empty",
-                "empty",
-                dbManager.db.push().key,
+                ad?.mainImage ?: "empty",
+                ad?.image2 ?: "empty",
+                ad?.image3 ?: "empty",
+                ad?.key ?: dbManager.db.push().key,
                 "0",
                 dbManager.auth.uid,
-                System.currentTimeMillis().toString()
+                ad?.time ?: System.currentTimeMillis().toString()
             )
         }
-        return ad
+        return adTemp
     }
 
     override fun onFragClose(list: ArrayList<Bitmap>) {
@@ -169,14 +169,33 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
     }
 
     private fun uploadImages() {
-        if (imageAdapter.mainArray.size == imageIndex) {
+        if (imageIndex == 3) {
             dbManager.publishAd(ad!!, onPublishFinish())
             return
         }
-        val byteArray = prepareImageByteArray(imageAdapter.mainArray[imageIndex])
-        uploadImage(byteArray) {
-            //dbManager.publishAd(ad!!, onPublishFinish())
-            nextImage(it.result.toString())
+        val oldUrl = getUrlFromAd()
+        if (imageAdapter.mainArray.size > imageIndex) {
+            val byteArray = prepareImageByteArray(imageAdapter.mainArray[imageIndex])
+            if (oldUrl.startsWith("http")) {
+                updateImage(byteArray, oldUrl) {
+                    nextImage(it.result.toString())
+                }
+            } else {
+                uploadImage(byteArray) {
+                    //dbManager.publishAd(ad!!, onPublishFinish())
+                    nextImage(it.result.toString())
+                }
+            }
+
+        } else {
+            if (oldUrl.startsWith("http")) {
+                deleteImageByUrl(oldUrl) {
+                    nextImage("empty")
+                }
+
+            } else {
+                nextImage("empty")
+            }
         }
     }
 
@@ -194,6 +213,10 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
         }
     }
 
+    private fun getUrlFromAd(): String {
+        return listOf(ad?.mainImage!!, ad?.image2!!, ad?.image3!!)[imageIndex]
+    }
+
     private fun prepareImageByteArray(bitmap: Bitmap): ByteArray {
         val outStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outStream)
@@ -204,6 +227,21 @@ class EditAdcAct : AppCompatActivity(), FragmentCloseInterface {
         val imStorageRef = dbManager.dbStorage
             .child(dbManager.auth.uid!!)
             .child("image_${System.currentTimeMillis()}")
+        val upTask = imStorageRef.putBytes(byteArray)
+        upTask.continueWithTask { task ->
+            imStorageRef.downloadUrl
+        }.addOnCompleteListener(listener)
+    }
+
+    private fun deleteImageByUrl(oldUrl: String, listener: OnCompleteListener<Void>) {
+        dbManager.dbStorage.storage
+            .getReferenceFromUrl(oldUrl)
+            .delete()
+            .addOnCompleteListener(listener)
+    }
+
+    private fun updateImage(byteArray: ByteArray, url: String, listener: OnCompleteListener<Uri>) {
+        val imStorageRef = dbManager.dbStorage.storage.getReferenceFromUrl(url)
         val upTask = imStorageRef.putBytes(byteArray)
         upTask.continueWithTask { task ->
             imStorageRef.downloadUrl
